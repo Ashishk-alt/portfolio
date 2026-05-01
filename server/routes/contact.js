@@ -121,9 +121,9 @@ const transporter = nodemailer.createTransport({
 // );
 router.post("/", async (req, res) => {
   try {
-    const contact = new Contact(req.body);
+    //const contact = new Contact(req.body);
 
-    await contact.save();
+    //await contact.save();
 
     return res.status(201).json({
       success: true,
