@@ -37,20 +37,26 @@ router.post(
       const contact = new Contact(req.body);
       await contact.save();
 
-      // Send Email to your Gmail
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
-        subject: `Portfolio Contact: ${subject || "New Message"}`,
-        html: `
-          <h2>New Portfolio Contact Message</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Subject:</strong> ${subject}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message}</p>
-        `,
-      });
+      // Try sending email but don't crash if it fails
+      try {
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: process.env.EMAIL_USER,
+          subject: `Portfolio Contact: ${subject || "New Message"}`,
+          html: `
+            <h2>New Portfolio Contact Message</h2>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Message:</strong></p>
+            <p>${message}</p>
+          `,
+        });
+        console.log("Email sent successfully");
+      } catch (emailErr) {
+        console.error("Email error:", emailErr.message);
+        // Don't return error - message is already saved to MongoDB
+      }
 
       res.status(201).json({
         success: true,
