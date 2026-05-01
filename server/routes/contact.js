@@ -1,10 +1,8 @@
-// server/routes/contact.js
 const nodemailer = require("nodemailer");
 const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const Contact = require("../models/Contact");
-
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -14,139 +12,59 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// POST /api/contact  –  Save a new message
-// router.post(
-//   "/",
-//   [
-//     body("name").trim().notEmpty().withMessage("Name is required"),
-//     body("email").isEmail().withMessage("Valid email is required"),
-//     body("message")
-//       .trim()
-//       .notEmpty()
-//       .withMessage("Message is required")
-//       .isLength({ max: 2000 })
-//       .withMessage("Message too long"),
-//   ],
-//   async (req, res) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       return res.status(400).json({ success: false, errors: errors.array() });
-//     }
+router.post(
+  "/",
+  [
+    body("name").trim().notEmpty().withMessage("Name is required"),
+    body("email").isEmail().withMessage("Valid email is required"),
+    body("message")
+      .trim()
+      .notEmpty()
+      .withMessage("Message is required")
+      .isLength({ max: 2000 })
+      .withMessage("Message too long"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
-//     try {
-//       const contact = new Contact(req.body);
-//       await contact.save();
-//       res
-//         .status(201)
-//         .json({ success: true, message: "Message received! I'll get back to you soon." });
-//     } catch (err) {
-//       console.error("Contact save error:", err.message);
-//       res.status(500).json({ success: false, message: "Server error. Please try again." });
-//     }
-//   }
-// );
-// POST /api/contact  –  Save a new message
-// router.post(
-//   "/",
-//   [
-//     body("name").trim().notEmpty().withMessage("Name is required"),
+    try {
+      const { name, email, subject, message } = req.body;
 
-//     body("email")
-//       .isEmail()
-//       .withMessage("Valid email is required"),
+      // Save to MongoDB
+      const contact = new Contact(req.body);
+      await contact.save();
 
-//     body("message")
-//       .trim()
-//       .notEmpty()
-//       .withMessage("Message is required")
-//       .isLength({ max: 2000 })
-//       .withMessage("Message too long"),
-//   ],
+      // Send Email to your Gmail
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER,
+        subject: `Portfolio Contact: ${subject || "New Message"}`,
+        html: `
+          <h2>New Portfolio Contact Message</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+          <p><strong>Message:</strong></p>
+          <p>${message}</p>
+        `,
+      });
 
-//   async (req, res) => {
-//     const errors = validationResult(req);
+      res.status(201).json({
+        success: true,
+        message: "Message received! I'll get back to you soon.",
+      });
 
-//     if (!errors.isEmpty()) {
-//       return res.status(400).json({
-//         success: false,
-//         errors: errors.array(),
-//       });
-//     }
-
-//     try {
-//       const { name, email, subject, message } = req.body;
-
-//       // Save to MongoDB
-//       const contact = new Contact(req.body);
-//       await contact.save();
-
-//       // Send Email
-//       // await transporter.sendMail({
-//       //   from: process.env.EMAIL_USER,
-//       //   to: process.env.EMAIL_USER,
-
-//       //   subject: `Portfolio Contact: ${
-//       //     subject || "New Message"
-//       //   }`,
-
-//       //   html: `
-//       //     <h2>New Portfolio Contact Message</h2>
-
-//       //     <p><strong>Name:</strong> ${name}</p>
-
-//       //     <p><strong>Email:</strong> ${email}</p>
-
-//       //     <p><strong>Subject:</strong> ${subject}</p>
-
-//       //     <p><strong>Message:</strong></p>
-
-//       //     <p>${message}</p>
-//       //   `,
-//       // });
-
-//       res.status(201).json({
-//         success: true,
-//         message: "Message received! I'll get back to you soon.",
-//       });
-
-//     } catch (err) {
-//       console.error("Contact save error:", err.message);
-
-//       res.status(500).json({
-//         success: false,
-//         message: "Server error. Please try again.",
-//       });
-//     }
-//   }
-// );
-router.post("/", async (req, res) => {
-  try {
-    //const contact = new Contact(req.body);
-
-    //await contact.save();
-
-    return res.status(201).json({
-      success: true,
-      message: "Message saved successfully",
-    });
-
-  } catch (err) {
-    console.error("ERROR:", err);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    } catch (err) {
+      console.error("Contact save error:", err.message);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+      });
+    }
   }
-});
-// GET /api/contact  –  Retrieve all messages (admin use)
-router.get("/", async (_req, res) => {
-  try {
-    const messages = await Contact.find().sort({ createdAt: -1 });
-    res.json({ success: true, data: messages });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
+);
 
 module.exports = router;
