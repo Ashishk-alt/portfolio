@@ -81,28 +81,28 @@ router.post(
       await contact.save();
 
       // Send Email
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
+      // await transporter.sendMail({
+      //   from: process.env.EMAIL_USER,
+      //   to: process.env.EMAIL_USER,
 
-        subject: `Portfolio Contact: ${
-          subject || "New Message"
-        }`,
+      //   subject: `Portfolio Contact: ${
+      //     subject || "New Message"
+      //   }`,
 
-        html: `
-          <h2>New Portfolio Contact Message</h2>
+      //   html: `
+      //     <h2>New Portfolio Contact Message</h2>
 
-          <p><strong>Name:</strong> ${name}</p>
+      //     <p><strong>Name:</strong> ${name}</p>
 
-          <p><strong>Email:</strong> ${email}</p>
+      //     <p><strong>Email:</strong> ${email}</p>
 
-          <p><strong>Subject:</strong> ${subject}</p>
+      //     <p><strong>Subject:</strong> ${subject}</p>
 
-          <p><strong>Message:</strong></p>
+      //     <p><strong>Message:</strong></p>
 
-          <p>${message}</p>
-        `,
-      });
+      //     <p>${message}</p>
+      //   `,
+      // });
 
       res.status(201).json({
         success: true,
